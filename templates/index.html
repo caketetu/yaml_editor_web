@@ -1,0 +1,113 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML Editor</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Title -->
+    <h1>YAML Files</h1>
+    
+    <!-- File Selection Form -->
+    <form action="{{ url_for('edit') }}" method="post" id="fileForm">
+        <label for="file">Select a file to edit:</label>
+        <select name="file" id="file">
+            {% for file in yaml_files %}
+                <option value="{{ file }}">{{ file }}</option>
+            {% endfor %}
+        </select>
+        <button type="button" onclick="readFile()">Read File</button>
+    </form>
+
+    <!-- YAML Content Display -->
+    <div id="yamlContent"></div>
+
+    <!-- JavaScript Section -->
+    <script>
+        /**
+         * Read the selected YAML file and display its content in a table.
+         */
+        function readFile() {
+            var selectedFile = document.getElementById("file").value;
+
+            fetch("/edit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: "file=" + encodeURIComponent(selectedFile),
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderTable(data);
+            });
+        }
+
+        /**
+         * Render the YAML content in a table for editing.
+         * @param {Object} data - YAML data to display.
+         */
+        function renderTable(data) {
+            var tableHtml = "<h2>Edit " + document.getElementById("file").value + "</h2><form action='/save' method='post'>";
+            tableHtml += "<input type='hidden' name='file' value='" + document.getElementById("file").value + "'>";
+            tableHtml += "<table>";
+            tableHtml += renderTableRecursive(data, 'data');
+            tableHtml += "</table>";
+            tableHtml += "<button type='submit'>Write</button></form>";
+
+            document.getElementById("yamlContent").innerHTML = tableHtml;
+        }
+
+        /**
+         * Recursively render a YAML data object as an HTML table.
+         * @param {Object} data - YAML data to render.
+         * @param {string} prefix - Prefix for form element names.
+         * @returns {string} - HTML representation of the table.
+         */
+        function renderTableRecursive(data, prefix) {
+            var html = "";
+            for (var key in data) {
+                html += "<tr><td>" + key + "</td><td>";
+                if (typeof data[key] === 'object') {
+                    html += "<table>";
+                    html += renderTableRecursive(data[key], prefix + "[" + key + "]");
+                    html += "</table>";
+                } else {
+                    // Check if the key is an array element
+                    var isArrayElement = key.endsWith(']') && key.includes('[');
+                    if (isArrayElement) {
+                        html += "<input type='text' name='" + prefix + "[" + key + "]' value='" + data[key] + "'>";
+                    } else {
+                        html += "<input type='text' name='" + prefix + "[" + key + "]' value='" + data[key] + "'>";
+                    }
+                }
+                html += "</td></tr>";
+            }
+            return html;
+        }
+    </script>
+
+</body>
+</html>
+
+
+
+
