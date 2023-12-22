@@ -10,7 +10,11 @@
 
 ## 使用方法
 
-1. プロジェクトをクローンします。
+1. editor_web.pyと同じ階層にYAMLファイルを保存します。
+2. 起動します python editor_web.py
+3. ブラウザで http://localhost:5000/ にアクセスします。
+4. YAMLファイルを選択し、"Read File"ボタンをクリックしてファイルを読み込みます。
+5. 表示されたテーブルで編集を行い、"Write"ボタンをクリックして変更内容を保存します。
 
-```bash
-git clone https://github.com/your-username/yaml-editor-web.git
+##注意事項
+配列には対応していません。
